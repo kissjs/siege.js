@@ -23,10 +23,12 @@ module.exports = function(options, callback) {
     var repeat = task.repeat || options.repeat;
     var duration = task.duration || options.duration;
     if(!duration && !repeat) {
-      repeat = 3000
+      duration = 10000
     }
 
-    var min = 1000000000;
+    var left = typeof repeat == 'undefined' ? Number.MAX_VALUE : repeat;
+
+    var min = Number.MAX_VALUE
     var max = 0;
     var avg = 0;
     var rps = 0;
@@ -64,8 +66,9 @@ module.exports = function(options, callback) {
               if(elapsed > max) max = elapsed;
               sumTime += elapsed;
               intervalDone ++;
+              done ++;
 
-              if(++done >= repeat) {
+              if(--left == 0) {
                 endTask();
               }
               running --;
@@ -80,7 +83,7 @@ module.exports = function(options, callback) {
 
       req.end();
 
-      if(running ++ < concurrent) process.nextTick(sendRequest);
+      if(running ++ < concurrent && left > 0) process.nextTick(sendRequest);
     }
 
 
@@ -93,7 +96,8 @@ module.exports = function(options, callback) {
       intervalDone = 0
 
       var out = process.stdout
-      out.write(util.format('\r%s(done)\t%d(rps)\t%d(curr rps)\t%d(min)\t%d(max)\t%d(avg)', done
+      out.write(util.format('\r%s(done)\t%d(rps)\t%d(curr rps)\t%dms(min)\t%dms(max)\t%dms(avg)'
+        , done
         , parseInt(rps)
         , parseInt(realtime_rps)
         , parseInt(min)
@@ -101,15 +105,18 @@ module.exports = function(options, callback) {
         , parseInt(avg)))
     }
 
-    var timer = setInterval(updateTaskData, 100);
-
-    var endTask = function () {
+    function endTask () {
       var ending = Date.now();
       updateTaskData()
       console.log('')
       clearInterval(timer)
+      if(timeout) clearTimeout(timeout)
       process.nextTick(nextTask)
     }
+
+    var timer = setInterval(updateTaskData, 100);
+
+    var timeout = duration && setTimeout(endTask, duration)
 
     sendRequest();
 
