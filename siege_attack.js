@@ -3,27 +3,7 @@ var http = require('http')
   , out = process.stdout
   ;
 
-// borrow from ansi.js
-//
-// '\033[' + args.join(';') + code
-// var codes = {
-//     up: 'A'
-//   , down: 'B'
-//   , forward: 'C'
-//   , back: 'D'
-//   , nextLine: 'E'
-//   , previousLine: 'F'
-//   , horizontalAbsolute: 'G'
-//   , eraseData: 'J'
-//   , eraseLine: 'K'
-//   , scrollUp: 'S'
-//   , scrollDown: 'T'
-//   , savePosition: 's'
-//   , restorePosition: 'u'
-//   , queryPosition: '6n'
-//   , hide: '?25l'
-//   , show: '?25h'
-// }
+// http://bluesock.org/~willg/dev/ansi.html
 
 var HIDE_CURSOR = '\033[?25l'
 var SHOW_CURSOR = '\033[?25h'
@@ -68,11 +48,16 @@ function rgb5 (r, g, b) {
   return 16 + (red*36) + (green*6) + blue
 }
 
+// red to green
+gradeColors = [ 196, 202, 166, 172, 136, 142, 106, 112, 76, 46 ].map(function(color){
+    return '\033[38;5;' + color + 'm'
+})
 // return grade color, big is better
 function gradeColor(value, worst, best) {
-  var score = (value - worst) / (best - worst);
+  var score = (value - worst) / (best - worst)
   score = Math.min(Math.max(score, 0), 1)
-  return forground((1-score) * 5, score * 5, 0)
+  var index = Math.round(score * 9)
+  return gradeColors[index]
 }
 
 module.exports = function(options, callback) {
@@ -191,7 +176,7 @@ module.exports = function(options, callback) {
           , task.method
           , task.url
           , done
-          , gradeColor(rps, 2000, 8000) +  parseInt(rps)  + RESET_STYLE
+          , gradeColor(rps, 2000, 7000) +  parseInt(rps)  + RESET_STYLE
           , gradeColor(min, 50, 10) +  parseInt(min)  + RESET_STYLE
           , gradeColor(max, 50, 10) +  parseInt(max)  + RESET_STYLE
           , gradeColor(avg, 50, 10) +  parseInt(avg)  + RESET_STYLE
