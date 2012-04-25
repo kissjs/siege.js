@@ -229,13 +229,14 @@ function merge(target, source) {
 function startSiege(options) {
   startServe(options, function(child){
       options.taskIndex = -1
-      var attack = siege_attack(options)
+      var attack = siege_attack(options, endProgram)
 
       function endProgram(){
-          attack.halt()
-          child.kill('SIGINT')
-          process.exit()
+        attack.halt()
+        child.kill()
+        process.exit()
       }
+
       process.on('SIGINT', endProgram)
 
       process.on('uncaughtException', function(err) {

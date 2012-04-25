@@ -1,6 +1,79 @@
 var http = require('http')
   , util = require('util')
+  , out = process.stdout
   ;
+
+// borrow from ansi.js
+//
+// '\033[' + args.join(';') + code
+// var codes = {
+//     up: 'A'
+//   , down: 'B'
+//   , forward: 'C'
+//   , back: 'D'
+//   , nextLine: 'E'
+//   , previousLine: 'F'
+//   , horizontalAbsolute: 'G'
+//   , eraseData: 'J'
+//   , eraseLine: 'K'
+//   , scrollUp: 'S'
+//   , scrollDown: 'T'
+//   , savePosition: 's'
+//   , restorePosition: 'u'
+//   , queryPosition: '6n'
+//   , hide: '?25l'
+//   , show: '?25h'
+// }
+
+var HIDE_CURSOR = '\033[?25l'
+var SHOW_CURSOR = '\033[?25h'
+var CLEAR_SCREEN = '\033[2J'
+var RESET_STYLE = '\033[0m'
+
+function gotoLine(line, col) {
+  return '\033[' + (line | 0) + ';' + (col | 0) + 'H'
+}
+
+// 0-5
+function background(r, g, b) {
+  return '\033[48;5;' + rgb5(r, g, b) + 'm'
+}
+
+// 0-5
+function forground(r, g, b) {
+  var code = rgb5(r, g, b);
+  return '\033[38;5;' + code + 'm'
+}
+
+/**
+ * Translates a 255 RGB value to a 0-5 ANSI RGV value,
+ * then returns the single ANSI color code to use.
+ */
+
+function rgb (r, g, b) {
+  var red = r / 51 // /255 * 5
+    , green = g / 51 // /255 * 5
+    , blue = b / 51 // /255 * 5
+  return rgb5(red, green, blue)
+}
+
+/**
+ * Turns rgb 0-5 values into a single ANSI color code to use.
+ */
+
+function rgb5 (r, g, b) {
+  var red = Math.round(r)
+    , green = Math.round(g)
+    , blue = Math.round(b)
+  return 16 + (red*36) + (green*6) + blue
+}
+
+// return grade color, big is better
+function gradeColor(value, worst, best) {
+  var score = (value - worst) / (best - worst);
+  score = Math.min(Math.max(score, 0), 1)
+  return forground((1-score) * 5, score * 5, 0)
+}
 
 module.exports = function(options, callback) {
 
@@ -94,15 +167,37 @@ module.exports = function(options, callback) {
       realtime_rps = intervalDone * 1000 / (now - intervalStart)
       intervalStart = now
       intervalDone = 0
+      reportData()
+    }
 
-      var out = process.stdout
-      out.write(util.format('\r%s(done)\t%d(rps)\t%d(curr rps)\t%dms(min)\t%dms(max)\t%dms(avg)'
-        , done
-        , parseInt(rps)
-        , parseInt(realtime_rps)
-        , parseInt(min)
-        , parseInt(max)
-        , parseInt(avg)))
+    function reportData(type) {
+      switch(type) {
+        case 'csv':
+        out.write(util.format('\r%s:%s\t%s(done)\t%s(rps)\t%s(curr rps)\t%sms(min)\t%sms(max)\t%sms(avg)'
+          , task.method
+          , task.url
+          , done
+          , gradeColor(rps, 1000, 5000) + parseInt(rps) //+ RESET_STYLE
+          , gradeColor(realtime_rps, 1000, 5000) + parseInt(realtime_rps)// + RESET_STYLE
+          , gradeColor(min, 50, 10) + parseInt(min) //+ RESET_STYLE
+          , gradeColor(max, 50, 10) + parseInt(max) //+ RESET_STYLE
+          , gradeColor(avg, 50, 10) + parseInt(avg) //+ RESET_STYLE
+        ));
+        break
+        default:
+        out.write(gotoLine((taskIndex - 1) * 6, 0))
+        out.write(
+          util.format('\n%s:%s\n\tdone: %s\n\trps: %s\n\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\n'
+          , task.method
+          , task.url
+          , done
+          , gradeColor(rps, 2000, 8000) +  parseInt(rps)  + RESET_STYLE
+          , gradeColor(min, 50, 10) +  parseInt(min)  + RESET_STYLE
+          , gradeColor(max, 50, 10) +  parseInt(max)  + RESET_STYLE
+          , gradeColor(avg, 50, 10) +  parseInt(avg)  + RESET_STYLE
+        ))
+        out.write(HIDE_CURSOR)
+      }
     }
 
     function endTask () {
@@ -122,10 +217,11 @@ module.exports = function(options, callback) {
 
   }
 
+  out.write(CLEAR_SCREEN)
   nextTask()
 
   function halt() {
-
+    out.write(SHOW_CURSOR)
   }
 
   return {
