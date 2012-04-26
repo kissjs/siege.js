@@ -8,10 +8,19 @@ var http = require('http')
 var HIDE_CURSOR = '\033[?25l'
 var SHOW_CURSOR = '\033[?25h'
 var CLEAR_SCREEN = '\033[2J'
+var ERASE_LINE = '\033[K'
 var RESET_STYLE = '\033[0m'
 
+function clearScreen() {
+  out.write(CLEAR_SCREEN)
+}
+
+function upLine(line) {
+  out.write('\033[' + (line || 1) + 'A')
+}
+
 function gotoLine(line, col) {
-  return '\033[' + (line | 0) + ';' + (col | 0) + 'H'
+  out.write('\033[' + (line | 0) + ';' + (col | 0) + 'H')
 }
 
 // 0-5
@@ -155,6 +164,7 @@ module.exports = function(options, callback) {
       reportData()
     }
 
+    var firstTime = true;
     function reportData(type) {
       switch(type) {
         case 'csv':
@@ -170,9 +180,11 @@ module.exports = function(options, callback) {
         ));
         break
         default:
-        out.write(gotoLine((taskIndex - 1) * 6, 0))
+        if(!firstTime) {
+          upLine(5)
+        }
         out.write(
-          util.format('\n%s:%s\n\tdone: %s\n\trps: %s\n\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\n'
+          util.format('\n\033[K%s:%s\n\033[K\tdone: %s\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\n\033[K'
           , task.method
           , task.url
           , done
@@ -183,6 +195,7 @@ module.exports = function(options, callback) {
         ))
         out.write(HIDE_CURSOR)
       }
+      firstTime = false
     }
 
     function endTask () {
@@ -202,7 +215,6 @@ module.exports = function(options, callback) {
 
   }
 
-  out.write(CLEAR_SCREEN)
   nextTask()
 
   function halt() {
