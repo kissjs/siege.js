@@ -52,12 +52,11 @@ var Siege = function(path, options) {
 var siege = Siege.prototype
 
 siege.on = function(port) {
-  this.options.port = port
+  if(/\d+/.test(port))
+    this.options.port = port
+  else
+    this.options.sockpath = port
   return this
-}
-
-siege.connect = function(port) {
-  this.options.connect = port
 }
 
 siege.host = function(host) {
@@ -125,6 +124,9 @@ siege.attack = function() {
   this.tasks.forEach(function(task){
       options.tasks.push(task.options)
   })
+  if(!options.port && !options.sockpath) {
+    options.sockpath = '/tmp/siege.sock'
+  }
   startSiege(this.options)
 }
 
@@ -232,8 +234,8 @@ function startSiege(options) {
       var attack = siege_attack(options, endProgram)
 
       function endProgram(){
+        if(child) child.kill()
         attack.halt()
-        child.kill()
         process.exit()
       }
 
@@ -249,15 +251,14 @@ function startSiege(options) {
 
 function startServe(options, callback) {
   var serve = options.serve;
-  if(!serve) callback();
+  if(!serve) return callback();
 
   var cmd = serve
   var args = []
   try{
-    var app = path.join(process.cwd(), serve)
-    require(app)
+    require(serve)
     cmd = '/usr/local/bin/node'
-    args = [__dirname + '/siege_server.js', '--port', options.sockpath || options.port || '/tmp/siege.sock', app]
+    args = [__dirname + '/siege_server.js', '--port', options.sockpath || options.port || '/tmp/siege.sock', serve]
   } catch(e){
   }
   var child = child_process.spawn(cmd, args)

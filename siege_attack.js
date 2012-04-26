@@ -117,7 +117,8 @@ module.exports = function(options, callback) {
     }
 
     function sendRequest() {
-      if(running > concurrent) return;
+      if(running > concurrent || left <=0) return;
+      if(running ++ < concurrent) process.nextTick(sendRequest);
 
       var reqStartTime = Date.now();
 
@@ -149,8 +150,6 @@ module.exports = function(options, callback) {
       })
 
       req.end();
-
-      if(running ++ < concurrent && left > 0) process.nextTick(sendRequest);
     }
 
 
@@ -181,10 +180,10 @@ module.exports = function(options, callback) {
         break
         default:
         if(!firstTime) {
-          upLine(5)
+          upLine(4)
         }
         out.write(
-          util.format('\n\033[K%s:%s\n\033[K\tdone: %s\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\n\033[K'
+          util.format('\n\033[K%s:%s\n\033[K\tdone: %s\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\033[K'
           , task.method
           , task.url
           , done

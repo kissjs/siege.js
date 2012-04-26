@@ -21,7 +21,7 @@ program.parse(process.argv);
 
 var APP = program.args[0]
 var PORT = program.port
-console.log('starting siege_server')
+console.log('starting siege_server %s', APP)
 
 if(!APP || !PORT) throw new Error('node siege_server.js --port port app.js')
 
