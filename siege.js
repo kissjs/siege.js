@@ -96,7 +96,8 @@ siege.request = function(options) {
 
 siege.get = function(url, query) {
   return this.request({
-      url: url
+      // FIXME
+      path: url
     , method: 'GET'
     , query: query
   })

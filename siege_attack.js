@@ -80,6 +80,7 @@ module.exports = function(options, callback) {
       if(callback) callback()
       process.exit()
     }
+    console.log(task)
 
     var startTime = Date.now();
     var intervalStart = startTime;
@@ -105,7 +106,7 @@ module.exports = function(options, callback) {
     var sumTime = 0;
 
     var requestOptions = {
-      url: task.url
+      path: task.path
     , method: task.method
     }
 
@@ -169,7 +170,7 @@ module.exports = function(options, callback) {
         case 'csv':
         out.write(util.format('\r%s:%s\t%s(done)\t%s(rps)\t%s(curr rps)\t%sms(min)\t%sms(max)\t%sms(avg)'
           , task.method
-          , task.url
+          , task.path
           , done
           , gradeColor(rps, 1000, 5000) + parseInt(rps) //+ RESET_STYLE
           , gradeColor(realtime_rps, 1000, 5000) + parseInt(realtime_rps)// + RESET_STYLE
@@ -185,7 +186,7 @@ module.exports = function(options, callback) {
         out.write(
           util.format('\n\033[K%s:%s\n\033[K\tdone: %s\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\033[K'
           , task.method
-          , task.url
+          , task.path
           , done
           , gradeColor(rps, 2000, 7000) +  parseInt(rps)  + RESET_STYLE
           , gradeColor(min, 50, 10) +  parseInt(min)  + RESET_STYLE
