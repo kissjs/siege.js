@@ -1,0 +1,19 @@
+{
+  "author": "Gui Lin",
+  "name": "siege",
+  "description": "http benchmark by nodejs",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/guileen/siege.js.git"
+  },
+  "main": "siege.js",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "commander": "*"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {}
+}
