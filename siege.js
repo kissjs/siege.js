@@ -51,7 +51,7 @@ var Siege = function(path, options) {
 
 var siege = Siege.prototype
 
-siege.listen = function(port) {
+siege.on = function(port) {
   this.options.port = port
   return this
 }
@@ -120,7 +120,7 @@ siege.report = function(options) {
   return this
 }
 
-siege.exec = function() {
+siege.attack = function() {
   var options = this.options
   this.tasks.forEach(function(task){
       options.tasks.push(task.options)
@@ -135,7 +135,7 @@ function SiegeWrap(siege) {
 var wrap = SiegeWrap.prototype
 
 // default wrap
-;['request', 'get', 'post', 'exec', 'describe'].forEach(function(name){
+;['request', 'get', 'post', 'attack', 'describe'].forEach(function(name){
   if(name[0] != '_') wrap[name] = function() {
     var args = __slice.call(arguments)
     return siege[name].apply(this.siege, args)
