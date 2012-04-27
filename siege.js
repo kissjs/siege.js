@@ -105,7 +105,8 @@ siege.get = function(url, query) {
 
 siege.post = function(url, body) {
   return this.request({
-      url: url
+      // FIXME
+      path: url
     , method: 'POST'
     , body: body
   })
