@@ -80,7 +80,6 @@ module.exports = function(options, callback) {
       if(callback) callback()
       process.exit()
     }
-    console.log(task)
 
     var startTime = Date.now();
     var intervalStart = startTime;
@@ -100,7 +99,8 @@ module.exports = function(options, callback) {
     var max = 0;
     var avg = 0;
     var rps = 0;
-    var errors = 0;
+    var errorsCount = 0;
+    var errors = {};
     var status = {};
 
     var sumTime = 0;
@@ -125,9 +125,6 @@ module.exports = function(options, callback) {
 
       var req = http.request(requestOptions, function(res) {
 
-          res.on('data', function(data) {
-          })
-
           res.on('end', function() {
               var resEndTime = Date.now();
               var elapsed = resEndTime - reqStartTime;
@@ -137,20 +134,37 @@ module.exports = function(options, callback) {
               intervalDone ++;
               done ++;
 
-              if(--left == 0) {
-                endTask();
-              }
-              running --;
-              process.nextTick(sendRequest);
+              endRequest();
           })
 
       });
 
       req.on('error', function(err){
-          console.log(err.stack)
+          var data = errors[err.message];
+          if(!data) {
+            data = errors[err.message] = {
+              message: err.message
+            , stack: err.stack
+            , count: 1
+            }
+            upLine(4)
+            console.log(err.stack)
+            firstTime = true
+          }
+          data.count ++
+          errorsCount ++
+          endRequest()
       })
 
       req.end();
+
+      function endRequest() {
+        if(--left == 0) {
+          endTask();
+        }
+        running --;
+        process.nextTick(sendRequest);
+      }
     }
 
 
@@ -183,11 +197,10 @@ module.exports = function(options, callback) {
         if(!firstTime) {
           upLine(4)
         }
+        out.write('\n\033[K' + task.method + ':' + task.path)
+        out.write('\n\033[K\tdone:' + done + (errorsCount ? ('\terrors:' + forground(5,0,0) + errorsCount + RESET_STYLE) : '' ))
         out.write(
-          util.format('\n\033[K%s:%s\n\033[K\tdone: %s\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\033[K'
-          , task.method
-          , task.path
-          , done
+          util.format('\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\033[K'
           , gradeColor(rps, 2000, 7000) +  parseInt(rps)  + RESET_STYLE
           , gradeColor(min, 50, 10) +  parseInt(min)  + RESET_STYLE
           , gradeColor(max, 50, 10) +  parseInt(max)  + RESET_STYLE
