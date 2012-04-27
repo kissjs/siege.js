@@ -148,7 +148,11 @@ module.exports = function(options, callback) {
             , stack: err.stack
             , count: 1
             }
-            upLine(4)
+            if(!firstTime) {
+              upLine(5)
+              out.write('\033[K\n\033[K\n\033[K\n\033[K\n\033[K\n')
+              upLine(5)
+            }
             console.log(err.stack)
             firstTime = true
           }
