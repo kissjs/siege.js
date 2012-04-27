@@ -133,6 +133,7 @@ module.exports = function(options, callback) {
               sumTime += elapsed;
               intervalDone ++;
               done ++;
+              status[res.statusCode] = (status[res.statusCode] || 0) + 1
 
               endRequest();
           })
@@ -195,10 +196,26 @@ module.exports = function(options, callback) {
         break
         default:
         if(!firstTime) {
-          upLine(4)
+          upLine(5)
         }
         out.write('\n\033[K' + task.method + ':' + task.path)
         out.write('\n\033[K\tdone:' + done + (errorsCount ? ('\terrors:' + forground(5,0,0) + errorsCount + RESET_STYLE) : '' ))
+        out.write('\n\033[K')
+        Object.keys(status).forEach(function(code){
+            var score
+            if(code >= 500) {
+              score = 0
+            } else if(code >= 400) {
+              score = 3
+            } else if (code >= 300) {
+              score = 8
+            } else if (code >= 200) {
+              score = 10
+            } else {
+              score = 7
+            }
+            out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + http.STATUS_CODES[code] + ': ' + status[code])
+        })
         out.write(
           util.format('\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\033[K'
           , gradeColor(rps, 2000, 7000) +  parseInt(rps)  + RESET_STYLE
