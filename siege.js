@@ -262,14 +262,15 @@ function startServe(options, callback) {
     cmd = '/usr/local/bin/node'
     args = [__dirname + '/siege_server.js', '--port', options.sockpath || options.port || '/tmp/siege.sock', serve]
   } catch(e){
+    cmd = cmd.split(/\s+/g)
+    args = cmd.slice(1)
+    cmd = cmd[0]
   }
   var child = child_process.spawn(cmd, args)
   var log = path.join(process.cwd(), options.serverlog || 'server.log')
   var errlog = path.join(process.cwd(), options.servererrlog || 'server.error.log')
-  // child.stdout.pipe(fs.createWriteStream(log))
-  // child.stderr.pipe(fs.createWriteStream(errlog))
-  child.stdout.pipe(process.stdout)
-  child.stderr.pipe(process.stderr)
+  child.stdout.pipe(fs.createWriteStream(log))
+  child.stderr.pipe(fs.createWriteStream(errlog))
 
   setTimeout(callback, 100, child);
 }
