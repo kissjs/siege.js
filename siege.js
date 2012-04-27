@@ -78,6 +78,11 @@ siege.describe = function(description) {
   return task
 }
 
+siege.wait = function(wait) {
+  this.options.wait = wait
+  return this
+}
+
 siege._newtask = function() {
   var task = new Task(this)
   this.tasks.push(task)
@@ -259,7 +264,7 @@ function startServe(options, callback) {
   var args = []
   try{
     require(serve)
-    cmd = '/usr/local/bin/node'
+    cmd = 'node'
     args = [__dirname + '/siege_server.js', '--port', options.sockpath || options.port || '/tmp/siege.sock', serve]
   } catch(e){
     cmd = cmd.split(/\s+/g)
@@ -272,7 +277,16 @@ function startServe(options, callback) {
   child.stdout.pipe(fs.createWriteStream(log))
   child.stderr.pipe(fs.createWriteStream(errlog))
 
-  setTimeout(callback, 100, child);
+  var wait = options.wait || 200
+  process.stdout.write('\033[?25l')
+  var timer = setInterval(function(){
+      process.stdout.write('.')
+  }, wait / 30)
+  setTimeout(function() {
+      clearInterval(timer)
+      process.stdout.write('\r\033[K')
+      callback(child)
+  }, wait);
 }
 
 var exports = module.exports = function(path, options) {
