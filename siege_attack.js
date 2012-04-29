@@ -234,6 +234,7 @@ module.exports = function(options, callback) {
 
     function endTask () {
       var ending = Date.now();
+      left = 0;
       updateTaskData()
       console.log('')
       clearInterval(timer)
