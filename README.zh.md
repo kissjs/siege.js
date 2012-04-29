@@ -63,6 +63,25 @@ save as `benchmark.js` and run
       
 上述代码, `/` 将执行2秒, `/about` 将执行3000次, `/contact` 将执行10000次.
 
+## 并发数控制
+
+使用 `.concurrent(n)` 来控制并发数量. 默认 15
+
+    siege()
+      .concurrent(100)
+      .get('/')
+      .attack()
+
+## Cookie
+
+使用 `.withCookie` 来开启cookie
+
+    siege()
+      .withCookie
+      .post('/login', {user: pass}).for(1).times
+      .get('/')
+      .attack()
+
 ## 开始攻城
 
 使用 `.attack()` 下达攻城命令.
@@ -86,7 +105,7 @@ save as `benchmark.js` and run
 
 ## 更多功能和报告?
 
-siege 将根据实际需要增加新功能, 如`withCookie`, `with304` 已在计划之中, 但尚不确定何时加入.
+siege 将根据实际需要增加新功能, 如`with304` 已在计划之中, 但尚不确定何时加入.
 
 siege 有输出测试报告的计划, 该功能也尚未实现.
 
