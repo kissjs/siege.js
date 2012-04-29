@@ -8,6 +8,10 @@ siege.js
       .for(10000).times
       .get('/')
       .attack()
+
+save as `benchmark.js` and run
+
+    node benchmark.js
       
 ## 使用siege启动/关闭服务
 
