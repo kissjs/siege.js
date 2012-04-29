@@ -1,5 +1,7 @@
 var http = require('http')
   , util = require('util')
+  , cookiejar = require('cookiejar')
+  , CookieJar = cookiejar.CookieJar
   , out = process.stdout
   ;
 
@@ -72,6 +74,10 @@ function gradeColor(value, worst, best) {
 module.exports = function(options, callback) {
 
   var taskIndex = 0
+    , globalJar
+
+  if(options.enableCookie)
+    globalJar = new CookieJar()
 
   function nextTask() {
 
@@ -81,6 +87,8 @@ module.exports = function(options, callback) {
       process.exit()
     }
 
+    var enableCookie = task.enableCookie || (task.enableCookie === undefined && options.enableCookie)
+    var jar = enableCookie && (globalJar || new CookieJar())
     var startTime = Date.now();
     var intervalStart = startTime;
     var intervalDone = 0;
@@ -105,9 +113,11 @@ module.exports = function(options, callback) {
 
     var sumTime = 0;
 
+    var headers = {}
     var requestOptions = {
       path: task.path
     , method: task.method
+    , headers: headers
     }
 
     if(options.sockpath) {
@@ -117,13 +127,24 @@ module.exports = function(options, callback) {
       requestOptions.host = options.host || '127.0.0.1'
     }
 
+    var cookieAccessInfo = cookiejar.CookieAccessInfo(requestOptions.host, requestOptions.path)
+
     function sendRequest() {
       if(running > concurrent || left <=0) return;
       if(running ++ < concurrent) process.nextTick(sendRequest);
 
+      if(enableCookie) {
+        headers['Cookie'] = jar.getCookies(cookieAccessInfo).map(function(cookie) {return cookie.toValueString()}).join(';')
+      }
+
       var reqStartTime = Date.now();
 
       var req = http.request(requestOptions, function(res) {
+
+          if(enableCookie) {
+            var cookies = res.headers['set-cookie']
+            if(cookies) jar.setCookies(cookies)
+          }
 
           res.on('end', function() {
               var resEndTime = Date.now();
@@ -202,7 +223,7 @@ module.exports = function(options, callback) {
         if(!firstTime) {
           upLine(5)
         }
-        out.write('\n\033[K' + task.method + ':' + task.path)
+        out.write('\n\033[K' + task.method + ':' + task.path + gradeColor(enableCookie ? 8 : 3, 0, 10) + (enableCookie ? '  with cookie' : '  without cookie') + RESET_STYLE)
         out.write('\n\033[K\tdone:' + done + (errorsCount ? ('\terrors:' + forground(5,0,0) + errorsCount + RESET_STYLE) : '' ))
         out.write('\n\033[K')
         Object.keys(status).forEach(function(code){
