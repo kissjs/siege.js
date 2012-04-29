@@ -134,7 +134,8 @@ siege.attack = function() {
   if(!options.port && !options.sockpath) {
     options.sockpath = '/tmp/siege.sock'
   }
-  startSiege(this.options)
+
+  queueSiege(this.options)
 }
 
 function SiegeWrap(siege) {
@@ -234,8 +235,24 @@ function merge(target, source) {
   }
 }
 
+var queue = [], started = false;
+function queueSiege(options) {
+  queue.push(options)
+  if(!started) {
+    started = true
+    nextSiege()
+  }
+}
 
-function startSiege(options) {
+function nextSiege() {
+  var options = queue.shift()
+  if(!options) {
+    process.exit()
+  }
+  startSiege(options, nextSiege)
+}
+
+function startSiege(options, callback) {
   startServe(options, function(child){
       options.taskIndex = -1
       var attack = siege_attack(options, endProgram)
@@ -243,7 +260,7 @@ function startSiege(options) {
       function endProgram(){
         if(child) child.kill()
         attack.halt()
-        process.exit()
+        callback()
       }
 
       process.on('SIGINT', endProgram)
@@ -259,6 +276,8 @@ function startSiege(options) {
 function startServe(options, callback) {
   var serve = options.serve;
   if(!serve) return callback();
+
+  console.log('starting ' + serve);
 
   var cmd = serve
   var args = []
