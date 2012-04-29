@@ -294,7 +294,7 @@ function startServe(options, callback) {
   var log = path.join(process.cwd(), options.serverlog || 'server.log')
   var errlog = path.join(process.cwd(), options.servererrlog || 'server.error.log')
   child.stdout.pipe(fs.createWriteStream(log))
-  child.stderr.pipe(fs.createWriteStream(errlog))
+  child.stderr.pipe(process.stderr)
 
   var wait = options.wait || 200
   process.stdout.write('\033[?25l')
