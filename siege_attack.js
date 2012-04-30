@@ -75,9 +75,14 @@ module.exports = function(options, callback) {
 
   var taskIndex = 0
     , globalJar
+    ;
 
-  if(options.enableCookie)
+  out.write('\n')
+
+  if(options.enableCookie) {
     globalJar = new CookieJar()
+    out.write('\033[38;5;46mEnable cookie\033[0m\n')
+  }
 
   function nextTask() {
 
@@ -223,7 +228,11 @@ module.exports = function(options, callback) {
         if(!firstTime) {
           upLine(5)
         }
-        out.write('\n\033[K' + task.method + ':' + task.path + gradeColor(enableCookie ? 8 : 3, 0, 10) + (enableCookie ? '  with cookie' : '  without cookie') + RESET_STYLE)
+        out.write('\n\033[K' + task.method + ':' + task.path)
+        if(task.enableCookie !== undefined) {
+          out.write(enableCookie ? (forground(0, 5, 0) + ' with cookie') : (forground(5, 5, 0) + ' without cookie'))
+          out.write(RESET_STYLE)
+        }
         out.write('\n\033[K\tdone:' + done + (errorsCount ? ('\terrors:' + forground(5,0,0) + errorsCount + RESET_STYLE) : '' ))
         out.write('\n\033[K')
         Object.keys(status).forEach(function(code){
