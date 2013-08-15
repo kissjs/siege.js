@@ -98,7 +98,7 @@ module.exports = function(options, callback) {
     var intervalStart = startTime;
     var intervalDone = 0;
     var running = 0;
-    var concurrent = task.concurrent || options.concurrent || 15;
+    var concurrent = http.globalAgent.maxSockets = task.concurrent || options.concurrent || 15;
     var done = 0;
     var repeat = task.repeat || options.repeat;
     var duration = task.duration || options.duration;
