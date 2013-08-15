@@ -163,6 +163,8 @@ module.exports = function(options, callback) {
 
               endRequest();
           })
+          
+          res.resume()
 
       });
 
