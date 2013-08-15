@@ -29,5 +29,6 @@ var app = require(APP)
 
 if(!app) throw new Error('app not found, ' + APP)
 
+console.log('try to listen at %s', PORT);
 http.createServer(app).listen(PORT)
 console.log('server listen at %s', PORT)
