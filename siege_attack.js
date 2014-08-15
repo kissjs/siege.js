@@ -136,6 +136,15 @@ module.exports = function(options, callback) {
         requestOptions.hostname = options.hostname
       }
     }
+    if (options.rejectUnauthorized) {
+      requestOptions.rejectUnauthorized = options.rejectUnauthorized;
+    }
+    if (options.requestCert) {
+      requestOptions.requestCert = options.requestCert;
+    }
+    if (options.agent) {
+      requestOptions.agent = options.agent;
+    }
 
     var cookieAccessInfo = cookiejar.CookieAccessInfo(requestOptions.host, requestOptions.path)
 

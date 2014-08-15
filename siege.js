@@ -69,6 +69,21 @@ siege.hostname = function(hostname) {
   return this
 }
 
+siege.rejectUnauthorized = function(rejectUnauthorized) {
+  this.options.rejectUnauthorized = rejectUnauthorized
+  return this
+}
+
+siege.requestCert = function(requestCert) {
+  this.options.requestCert = requestCert
+  return this
+}
+
+siege.agent = function(agent) {
+  this.options.agent = agent
+  return this
+}
+
 siege.concurrent = function(concurrent) {
   this.options.concurrent = concurrent
   return this
