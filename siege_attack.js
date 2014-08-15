@@ -1,4 +1,5 @@
 var http = require('http')
+  , https = require('https')
   , util = require('util')
   , cookiejar = require('cookiejar')
   , CookieJar = cookiejar.CookieJar
@@ -98,12 +99,17 @@ module.exports = function(options, callback) {
     var intervalStart = startTime;
     var intervalDone = 0;
     var running = 0;
-    var concurrent = http.globalAgent.maxSockets = task.concurrent || options.concurrent || 15;
     var done = 0;
+    var concurrent = options.concurrent || 15;
     var repeat = task.repeat || options.repeat;
     var duration = task.duration || options.duration;
     if(!duration && !repeat) {
       duration = 10000
+    }
+    if (options.sslProtocol && options.sslProtocol === true) {
+      concurrent = https.globalAgent.maxSockets = task.concurrent || options.concurrent || 15;
+    } else {
+      concurrent = http.globalAgent.maxSockets = task.concurrent || options.concurrent || 15;
     }
 
     var left = typeof repeat == 'undefined' ? Number.MAX_VALUE : repeat;
@@ -157,8 +163,15 @@ module.exports = function(options, callback) {
       }
 
       var reqStartTime = Date.now();
+      var req;
+      if (options.sslProtocol && options.sslProtocol === true) {
+        console.log("here");
+        req = https.request(requestOptions,handleRequest);
+      } else {
+        req = http.request(requestOptions,handleRequest);
+      }
 
-      var req = http.request(requestOptions, function(res) {
+      function handleRequest(res) {
 
           if(enableCookie) {
             var cookies = res.headers['set-cookie']
@@ -180,7 +193,7 @@ module.exports = function(options, callback) {
 
           res.resume()
 
-      });
+      }
 
       req.on('error', function(err){
           var data = errors[err.message];
@@ -264,7 +277,11 @@ module.exports = function(options, callback) {
             } else {
               score = 7
             }
-            out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + http.STATUS_CODES[code] + ': ' + status[code])
+            if (options.sslProtocol && options.sslProtocol === true) {
+              out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + https.STATUS_CODES[code] + ': ' + status[code])
+            } else {
+              out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + http.STATUS_CODES[code] + ': ' + status[code])
+            }
         })
         out.write(
           util.format('\n\033[K\trps: %s\n\033[K\tresponse: %sms(min)\t%sms(max)\t%sms(avg)\033[K'

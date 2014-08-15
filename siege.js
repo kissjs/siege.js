@@ -84,6 +84,11 @@ siege.agent = function(agent) {
   return this
 }
 
+siege.sslProtocol = function(sslProtocol) {
+  this.options.sslProtocol = sslProtocol
+  return this
+}
+
 siege.concurrent = function(concurrent) {
   this.options.concurrent = concurrent
   return this
