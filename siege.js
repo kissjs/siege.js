@@ -64,6 +64,11 @@ siege.host = function(host) {
   return this
 }
 
+siege.hostname = function(hostname) {
+  this.options.hostname = hostname
+  return this
+}
+
 siege.concurrent = function(concurrent) {
   this.options.concurrent = concurrent
   return this

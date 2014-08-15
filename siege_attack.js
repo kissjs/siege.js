@@ -129,7 +129,12 @@ module.exports = function(options, callback) {
       requestOptions.socketPath = options.sockpath
     } else {
       requestOptions.port = options.port
-      requestOptions.host = options.host || '127.0.0.1'
+      if (options.host) {
+        requestOptions.host = options.host
+      }
+      if (options.hostname) {
+        requestOptions.hostname = options.hostname
+      }
     }
 
     var cookieAccessInfo = cookiejar.CookieAccessInfo(requestOptions.host, requestOptions.path)
@@ -163,7 +168,7 @@ module.exports = function(options, callback) {
 
               endRequest();
           })
-          
+
           res.resume()
 
       });
