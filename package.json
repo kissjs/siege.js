@@ -2,10 +2,10 @@
   "author": "Gui Lin",
   "name": "siege",
   "description": "http benchmark by nodejs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": {
     "type": "git",
-    "url": "git://github.com/guileen/siege.js.git"
+    "url": "git://github.com/kissjs/siege.js.git"
   },
   "main": "siege.js",
   "engines": {
