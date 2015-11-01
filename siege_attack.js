@@ -118,7 +118,8 @@ module.exports = function(options, callback) {
 
     var sumTime = 0;
 
-    var headers = {}
+    var headers = options.headers || {}
+
     var requestOptions = {
       path: task.path
     , method: task.method

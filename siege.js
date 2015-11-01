@@ -117,6 +117,12 @@ siege.post = function(url, body) {
   })
 }
 
+siege.set = function(name, value) {
+  this.options.headers = this.options.headers || {}
+  this.options.headers[name] = value
+  return this
+}
+
 siege.for = function(num) {
   return new For(this, num)
 }
