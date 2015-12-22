@@ -6,5 +6,5 @@ siege(__dirname + '/app.js')
   .concurrent(100)
   .for(10000).times
   .get('/')
-  .post('/')
+  .post('/', {name: "world"})
   .attack()
