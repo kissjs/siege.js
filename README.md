@@ -1,6 +1,13 @@
 siege.js
 ========
 
+![sigetest](http://guileen.github.io/img/siege.js/siegetest.gif)
+
+# install
+```
+npm install siege --save
+```
+
 http benchmark
 
     siege()
