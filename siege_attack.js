@@ -1,5 +1,6 @@
 var http = require('http')
   , https = require('https')
+  , querystring = require('querystring')
   , util = require('util')
   , cookiejar = require('cookiejar')
   , CookieJar = cookiejar.CookieJar
@@ -216,6 +217,10 @@ module.exports = function(options, callback) {
           errorsCount ++
           endRequest()
       })
+
+      if(requestOptions.method === 'POST' && task.body) {
+          req.write(querystring.stringify(task.body));
+      }
 
       req.end();
 
