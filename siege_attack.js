@@ -175,6 +175,11 @@ module.exports = function(options, callback) {
 
       // Add QueryString to URL for GET Requests with Parameters
       if(requestOptions.method === 'GET' && task.query) {
+          // Reset query string if present
+          var hasQuery = requestOptions.path.indexOf('?')
+          if(hasQuery > 0) {
+            requestOptions.path = requestOptions.path.substring(0,hasQuery)
+          }
           requestOptions.path = requestOptions.path + "?" + querystring.stringify(task.query)
       }
 
