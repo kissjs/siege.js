@@ -164,10 +164,26 @@ module.exports = function(options, callback) {
         headers['Cookie'] = jar.getCookies(cookieAccessInfo).map(function(cookie) {return cookie.toValueString()}).join(';')
       }
 
+      // Add POST Headers for POST Requests
+      if(requestOptions.method === 'POST' && task.body) {
+        headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        headers['Content-Length'] = querystring.stringify(task.body).length
+      }
+
       var reqStartTime = Date.now();
       var req;
+
+      // Add QueryString to URL for GET Requests with Parameters
+      if(requestOptions.method === 'GET' && task.query) {
+          // Reset query string if present
+          var hasQuery = requestOptions.path.indexOf('?')
+          if(hasQuery > 0) {
+            requestOptions.path = requestOptions.path.substring(0,hasQuery)
+          }
+          requestOptions.path = requestOptions.path + "?" + querystring.stringify(task.query)
+      }
+
       if (options.sslProtocol && options.sslProtocol === true) {
-        console.log("here");
         req = https.request(requestOptions,handleRequest);
       } else {
         req = http.request(requestOptions,handleRequest);
@@ -218,6 +234,8 @@ module.exports = function(options, callback) {
           endRequest()
       })
 
+
+      // Add POST Body for POST requests
       if(requestOptions.method === 'POST' && task.body) {
           req.write(querystring.stringify(task.body));
       }
