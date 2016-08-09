@@ -166,8 +166,14 @@ module.exports = function(options, callback) {
 
       // Add POST Headers for POST Requests
       if(requestOptions.method === 'POST' && task.body) {
-        headers['Content-Type'] = 'application/x-www-form-urlencoded'
-        headers['Content-Length'] = querystring.stringify(task.body).length
+        if (typeof task.body === 'object') {
+          task.body = rfc3986(JSON.stringify(task.body));
+        } else {
+          task.body = rfc3986(task.body);
+        }
+
+        headers['Content-Type'] = 'application/json';
+        headers['Content-Length'] = getContentLength(task.body);
       }
 
       var reqStartTime = Date.now();
@@ -187,6 +193,44 @@ module.exports = function(options, callback) {
         req = https.request(requestOptions,handleRequest);
       } else {
         req = http.request(requestOptions,handleRequest);
+      }
+
+      function rfc3986(str) {
+        return str.replace(/[!'()*]/g, function (c) {
+          return '%' + c.charCodeAt(0).toString(16).toUpperCase()
+        })
+      }
+
+      function isStrictTypedArray(arr) {
+        return (
+            arr instanceof Int8Array
+            || arr instanceof Int16Array
+            || arr instanceof Int32Array
+            || arr instanceof Uint8Array
+            || arr instanceof Uint8ClampedArray
+            || arr instanceof Uint16Array
+            || arr instanceof Uint32Array
+            || arr instanceof Float32Array
+            || arr instanceof Float64Array
+        )
+      }
+
+      function getContentLength (body) {
+        if (isStrictTypedArray(body)) {
+          body = new Buffer(body)
+        }
+
+        var length;
+        if (typeof body === 'string') {
+          length = Buffer.byteLength(body);
+        } else if (Array.isArray(body)) {
+          length = body.reduce(function (a, b) {return a + b.length}, 0);
+        }
+        else {
+          length = body.length;
+        }
+
+        return length;
       }
 
       function handleRequest(res) {
@@ -237,7 +281,7 @@ module.exports = function(options, callback) {
 
       // Add POST Body for POST requests
       if(requestOptions.method === 'POST' && task.body) {
-          req.write(querystring.stringify(task.body));
+          req.write(task.body);
       }
 
       req.end();
