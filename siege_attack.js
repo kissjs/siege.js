@@ -302,7 +302,7 @@ module.exports = function(options, callback) {
               score = 7
             }
             if (options.sslProtocol && options.sslProtocol === true) {
-              out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + https.STATUS_CODES[code] + ': ' + status[code])
+              out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + http.STATUS_CODES[code] + ': ' + status[code])
             } else {
               out.write('\t' + gradeColor(score, 0, 10) + code + RESET_STYLE + ' ' + http.STATUS_CODES[code] + ': ' + status[code])
             }
@@ -348,4 +348,3 @@ module.exports = function(options, callback) {
   }
 
 }
-
