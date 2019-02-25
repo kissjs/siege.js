@@ -166,8 +166,8 @@ module.exports = function(options, callback) {
 
       // Add POST Headers for POST Requests
       if(requestOptions.method === 'POST' && task.body) {
-        headers['Content-Type'] = 'application/x-www-form-urlencoded'
-        headers['Content-Length'] = querystring.stringify(task.body).length
+        headers['Content-Type'] = headers['Content-Type'] || 'application/json'
+        headers['Content-Length'] = JSON.stringify(task.body).length
       }
 
       var reqStartTime = Date.now();
@@ -237,7 +237,7 @@ module.exports = function(options, callback) {
 
       // Add POST Body for POST requests
       if(requestOptions.method === 'POST' && task.body) {
-          req.write(querystring.stringify(task.body));
+          req.write(JSON.stringify(task.body));
       }
 
       req.end();
@@ -348,4 +348,3 @@ module.exports = function(options, callback) {
   }
 
 }
-
