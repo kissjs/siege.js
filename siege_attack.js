@@ -1,6 +1,6 @@
 var http = require('http')
   , https = require('https')
-  , querystring = require('querystring')
+  , querystring = require('qs')
   , util = require('util')
   , cookiejar = require('cookiejar')
   , CookieJar = cookiejar.CookieJar
